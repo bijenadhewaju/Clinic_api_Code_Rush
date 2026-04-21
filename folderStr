@@ -1,0 +1,83 @@
+clinic_project/
+│
+├── clinic_project/ 		 ← main django project
+│   ├── __init__.py
+│   ├── settings.py
+│   ├── urls.py
+│   ├── asgi.py
+│   └── wsgi.py
+│
+├── clinic/			 ← app
+│   ├── migrations/
+│   ├── __init__.py
+│   ├── admin.py
+│   ├── apps.py
+│   ├── models.py        ← WRITE MODEL HERE
+│   ├── views.py         ← WRITE API HERE
+│   ├── tests.py
+│
+├── manage.py
+
+steps
+
+- pip install django djangorestframework
+- django-admin startproject clinic_project
+- cd clinic_project
+- python manage.py startapp clinic
+- add in settings.py
+        'rest_framework',
+            'clinic',
+-models.py
+        from django.db import models
+
+# Create your models here.
+class Doctor(models.Model):
+    name = models.CharField(max_length=100)
+    specialization = models.CharField(max_length=100)
+    experience = models.CharField(max_length=100)
+
+    def __str__(self):
+        return self.name
+
+-  python manage.py makemigrations
+-  python manage.py migrate
+
+#create serialiser file (clinic/serialisers.py)
+from rest_framework import serializers
+from .models import Doctor
+
+#python to json -serializer
+#json to python -deserrializer
+
+class DoctorSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Doctor
+        fields = '__all__'
+
+#views.py
+from django.shortcuts import render
+from rest_framework.decorators import api_view
+from rest_framework.response import Response
+
+from clinic_project.clinic.models import Doctor
+from clinic_project.clinic.serializers import DoctorSerializer
+
+
+# Create your views here.
+#annotation
+@api_view(['GET','POST'])
+def doctor_list(request):
+    if request.method == 'GET':
+        doctors = Doctor.objects.all()
+        serializer = DoctorSerializer(doctors, many=True)
+        return render(serializer.data)
+    elif request.method == 'POST':
+        serializer = DoctorSerializer(data=request.data)
+        if serializer.is_valid():
+            serializer.save()
+            return render(serializer.data)
+        return Response(serializer.errors)
+
+
+
+task : create serialiser file and views.py , urls.py

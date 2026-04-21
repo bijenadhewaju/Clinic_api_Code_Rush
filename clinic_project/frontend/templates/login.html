@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>login page</title>
+
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.datatables.net/2.3.7/css/dataTables.bootstrap5.css" rel="stylesheet">
+</head>
+<body>
+<div class="container">
+<a href="http://127.0.0.1:8000/register/" >Register</a>
+
+<h2>Login page </h2>
+<form id="loginForm">
+  <div class="mb-3">
+    <label for="username" class="form-label">username</label>
+    <input type="text" class="form-control" id="username" >
+
+  </div>
+  <div class="mb-3">
+    <label for="password" class="form-label">Password</label>
+    <input type="password" class="form-control" id="password">
+  </div>
+
+  <button class="btn btn-primary" type="submit">Submit</button>
+</form>
+</div>
+
+<script src="https://code.jquery.com/jquery-3.7.1.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.bundle.min.js"></script>
+<script src="https://cdn.datatables.net/2.3.7/js/dataTables.js"></script>
+<script>
+    document.getElementById("loginForm").addEventListener("submit", function(event) {
+    event.preventDefault();
+
+    fetch("http://127.0.0.1:8000/api/token/", {
+        method: "POST",
+        headers: {
+            "Content-Type": "application/json"
+        },
+        body: JSON.stringify({
+            username: document.getElementById('username').value,
+            password: document.getElementById('password').value
+        })
+    })
+    .then(res => res.json())
+    .then(data => {
+        console.log("LOGIN RESPONSE:", data);
+
+        if (data.access) {
+            localStorage.setItem("token", data.access);
+            getUserProfile();
+        } else {
+            alert("Login failed");
+        }
+    })
+    .catch(error => {
+        console.error("Error:", error);
+        alert("Server error");
+    });
+});
+
+    function getUserProfile(){
+        const token = localStorage.getItem("token");
+        fetch("http://127.0.0.1:8000/api/auth/profile/",{
+            method: "GET",
+            headers:{
+             "Authorization":"Bearer " +token,
+             "Content-Type":"application/json"
+            }
+
+        }).then(res=>res.json())
+        .then(data=>{
+        if(data.role==="doctor"){
+            window.location.href = "/doctor_home/";
+
+        }else{
+         window.location.href = "/patient_home/";
+        }
+        });
+    }
+</script>
+
+
+
+
+</body>
+</html>

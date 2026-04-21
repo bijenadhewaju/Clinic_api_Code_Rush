@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Doctors Clinic application </title>
+</head>
+<body>
+<h1>Doctors list</h1>
+<ul id="doctors_list">
+</ul>
+<a href="http://127.0.0.1:8000/admin/" target="_blank">admin site</a>
+<a href="http://127.0.0.1:8000/doctors/" target="_blank">doctors list site</a>
+<a href="http://127.0.0.1:8000/api/auth/register" target="_blank">Registration Page</a>
+<a href="http://127.0.0.1:8000/login/" >Login</a>
+<a href="http://127.0.0.1:8000/register/" >Register</a>
+<h2>User List</h2>
+
+<table border="1">
+    <thead>
+        <tr>
+            <th>ID</th>
+            <th>Username</th>
+            <th>Role</th>
+        </tr>
+    </thead>
+    <tbody id="userTable"></tbody>
+</table>
+<script>
+function loadUsers() {
+    const token = localStorage.getItem("token");
+
+    fetch("http://127.0.0.1:8000/api/auth/users/", {
+        method: "GET",
+        headers: {
+            "Authorization": "Bearer " + token,
+            "Content-Type": "application/json"
+        }
+    })
+    .then(res => {
+        if (!res.ok) {
+            throw new Error("Unauthorized or error");
+        }
+        return res.json();
+    })
+    .then(data => {
+        console.log("USERS:", data);
+
+        let table = document.getElementById("userTable");
+        table.innerHTML = "";
+
+        data.forEach(user => {
+            table.innerHTML += `
+                <tr>
+                    <td>${user.id}</td>
+                    <td>${user.username}</td>
+                    <td>${user.role}</td>
+                </tr>
+            `;
+        });
+    })
+    .catch(err => {
+        console.error("Error:", err);
+        alert("Login required");
+    });
+}
+// load on page open
+loadUsers();
+</script>
+<hr>
+<h2>add doctors </h2>
+<form id="doctorForm" method="POST">
+    {% csrf_token %}
+    <input id="name" placeholder="Dr Name">
+    <input id="specialization" placeholder="add specialization like : eyes, nose, heart etc">
+    <button type="submit">Add</button>
+</form>
+<script>
+    const token = localStorage.getItem("token");
+    fetch("http://127.0.0.1:8000/api/clinic/doctors/",{
+    method :"GET",
+    header:{"Authorization":"Bearer "+token}
+    })
+   .then(response => response.json())
+   .then(data=>{
+        const list = document.getElementById('doctors_list');
+        data.forEach(doctor => {
+            const li = document.createElement('li');
+            li.innerText = doctor.name;
+            list.appendChild(li);
+
+        });
+    }).catch(error => console.errors("error is :", error));
+
+    document.getElementById("doctorForm").addEventListener("submit",function (e) {
+        e.preventDefault();
+        alert(document.getElementById("name").value);
+        alert(document.getElementById('specialization').value);
+        var name= document.getElementById("name").value;
+        var specialization = document.getElementById('specialization').value;
+          fetch("http://127.0.0.1:8000/api/clinic/doctors/", {
+            method:"POST",
+            headers:{"Content-Type" : "application/json"},
+            body:JSON.stringify({
+                name: name,
+                specialization:specialization
+            })
+        }).then(res=>res.json())
+            .then(data=>console.log('Doctors added:',data))
+           .catch(error => console.error("error is :", error));
+
+    });
+</script>
+</body>
+</html>

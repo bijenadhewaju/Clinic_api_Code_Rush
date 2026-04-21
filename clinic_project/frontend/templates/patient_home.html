@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>patient</title>
+     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.datatables.net/2.3.7/css/dataTables.bootstrap5.css" rel="stylesheet">
+</head>
+<body>
+<script>
+if (!localStorage.getItem("token")) {
+    window.location.href = "/login/";
+}
+</script>
+this is patient page
+<button onclick="logout()">Logout</button>
+</body>
+
+<script src="https://code.jquery.com/jquery-3.7.1.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.bundle.min.js"></script>
+<script src="https://cdn.datatables.net/2.3.7/js/dataTables.js"></script>
+<script>
+function logout() {
+    localStorage.removeItem("token");   // remove JWT
+    alert("Logged out successfully");
+    window.location.href = "/login/";   // redirect to login
+}
+</script>
+</html>
