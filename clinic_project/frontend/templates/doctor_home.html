@@ -6,5 +6,25 @@
 </head>
 <body>
 this is doctor page
+<button id="logoutBtn">Logout</button>
+<script>
+    const token = localStorage.getItem("token");
+
+    if (!token) {
+        alert("You must login first!");
+        window.location.href = "/login/";
+    }
+document.getElementById("logoutBtn").addEventListener("click", function() {
+
+    // Remove token from storage
+    localStorage.removeItem("token");
+
+    // Optional: clear everything
+    // localStorage.clear();
+
+    // Redirect to login page
+    window.location.href = "/login/";
+});
+</script>
 </body>
 </html>

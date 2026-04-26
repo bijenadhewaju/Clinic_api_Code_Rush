@@ -3,7 +3,7 @@ from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.response import Response
 
 from .serializers import RegistrationSerializer
-from clinic.models import Doctor
+from clinic.models import Doctor, Patient
 from .models import User
 from django.views.decorators.csrf import csrf_exempt
 # Create your views here.
@@ -12,18 +12,31 @@ from django.views.decorators.csrf import csrf_exempt
 def register(request):
     print("check 11")
     print(request.data)
+
     serializer = RegistrationSerializer(data=request.data)
+
     print("check 22")
     print(serializer.is_valid())
+
     if serializer.is_valid():
         user = serializer.save()
+
         print("+++++++++++++++")
         print(user)
         print("USER CREATED:", user.username)
-        #check for doctor
+
+        # check for doctor or patient
         if user.role == "doctor":
-            Doctor.objects.create(user=user, name= user.username)
-        return Response('Registration successful')
+            Doctor.objects.create(user=user)
+
+        elif user.role == "patient":
+            Patient.objects.create(user=user)
+        print("Doctor count:", Doctor.objects.count())
+        print("Patient count:", Patient.objects.count())
+        return Response({"message": "Registration successful"})
+    else:
+        print("ERRORS:", serializer.errors)
+
 
     return Response(serializer.errors, status=400)
 

@@ -12,24 +12,22 @@ from .serializers import DoctorSerializer, PatientSerializer, AppointmentSeriali
 # Create your views here.
 #annotation
 
-@api_view(['GET','POST'])
+@api_view(['GET'])
 @permission_classes([AllowAny])
 def doctor_list(request):
-    print('check 1 ')
-    if request.method == 'GET':
-        print('check 2')
-        doctors = Doctor.objects.all()
-        serializer = DoctorSerializer(doctors, many=True)
-        return Response(serializer.data)
-    elif request.method == 'POST':
-        print('check 3')
-        print(request.data)
-        serializer = DoctorSerializer(data=request.data)
-        if serializer.is_valid():
-            serializer.save()
-            return Response(serializer.data)
-        return Response(serializer.errors)
+    doctors = Doctor.objects.select_related('user').all()
 
+    data = [
+        {
+            "id": d.id,
+            "username": d.user.username,
+            "specialization": d.specialization,
+            "experience": d.experience
+        }
+        for d in doctors
+    ]
+
+    return Response(data)
 
 @api_view(['GET','PUT','DELETE'])
 @permission_classes([IsAuthenticated])
@@ -56,17 +54,18 @@ def doctor_detail(request, pk):
 @api_view(['GET','POST'])
 @permission_classes([IsAuthenticated])
 def patient_list(request):
-    if request.method == 'GET':
-        patient = Patient.objects.all()
-        serializer = DoctorSerializer(patient, many=True)
-        return Response(serializer.data)
-    elif request.method == 'POST':
-        serializer = PatientSerializer(data=request.data)
-        if serializer.is_valid():
-            serializer.save()
-            return Response(serializer.data)
-        return Response(serializer.errors)
+    patients = Patient.objects.select_related('user').all()
 
+    data = [
+        {
+            "id": p.id,
+            "username": p.user.username,
+            "age": p.age
+        }
+        for p in patients
+    ]
+
+    return Response(data)
 
 @api_view(['GET','PUT','DELETE'])
 @permission_classes([IsAuthenticated])
@@ -93,17 +92,39 @@ def patient_detail(request, pk):
 @api_view(['GET', 'POST'])
 @permission_classes([IsAuthenticated])
 def appointment_list(request):
+
     if request.method == 'GET':
-        appointment = Appointment.objects.all()
-        serializer = AppointmentSerializer(appointment, many=True)
-        return Response(serializer.data)
+        appointments = Appointment.objects.select_related('doctor__user', 'patient__user').all()
+
+        data = [
+            {
+                "id": a.id,
+                "doctor": a.doctor.user.username,
+                "patient": a.patient.user.username,
+                "date": a.date,
+                "time": a.time
+            }
+            for a in appointments
+        ]
+
+        return Response(data)
+
     elif request.method == 'POST':
         serializer = AppointmentSerializer(data=request.data)
+
         if serializer.is_valid():
+            doctor = serializer.validated_data['doctor']
+            date = serializer.validated_data['date']
+            time = serializer.validated_data['time']
+
+            # to prevent double booking
+            if Appointment.objects.filter(doctor=doctor, date=date, time=time).exists():
+                return Response({"error": "Doctor already booked"}, status=400)
+
             serializer.save()
             return Response(serializer.data)
-        return Response(serializer.errors)
 
+        return Response(serializer.errors)
 
 @api_view(['GET', 'PUT', 'DELETE'])
 @permission_classes([IsAuthenticated])
