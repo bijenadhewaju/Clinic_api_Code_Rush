@@ -51,7 +51,6 @@ def doctor_detail(request, pk):
 
 ####################   patient         ###########
 
-
 @api_view(['GET','POST'])
 @permission_classes([IsAuthenticated])
 def patient_list(request):

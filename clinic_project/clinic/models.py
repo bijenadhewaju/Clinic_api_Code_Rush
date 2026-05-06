@@ -1,3 +1,5 @@
+from django.utils import timezone
+
 from django.db import models
 
 from django.conf import settings
@@ -23,3 +25,10 @@ class Appointment(models.Model):
     patient = models.ForeignKey(Patient, on_delete=models.CASCADE)
     date = models.DateField()
     time = models.TimeField()
+    status = models.CharField(max_length=100,
+                              choices=[
+                                  ("pending","Pending"),
+                                  ("approved","Approved"),
+                                  ("rejected","Rejected")
+                              ],default="pending")
+    created_at = models.DateTimeField(default=timezone.now)

@@ -9,6 +9,7 @@ urlpatterns = [
     path('doctors/<int:pk>/',doctor_detail, name= 'doctor_detail'),
     path('patient/', patient_list, name='patient-list'), #comment this line for TDD
     path('patient/<int:pk>/', patient_detail),
-    path('appointment/', appointment_list),
-    path('appointment/<int:pk>/', appointment_detail),
+
+    path('appointment/', appointment_list, name='appointment-list'),
+    path('appointment/<int:pk>/', appointment_detail, name='appointment-detail'),
 ]

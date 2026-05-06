@@ -1,0 +1,12 @@
+TODO:
+Patient Side :
+Book Appointments
+Choose Doctor
+Select Date and time
+
+Doctor Side :
+View Appointment
+Accept/reject
+
+Admin Side :
+View all appointment
