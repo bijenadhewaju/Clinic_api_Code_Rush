@@ -4,6 +4,7 @@ from django.db import models
 # Create your models here.
 class User(AbstractUser):
     ROLE_CHOICES = (
+    ('admin', 'admin'),
     ('doctor', 'Doctor'),
     ('patient', 'Patient'),
     )

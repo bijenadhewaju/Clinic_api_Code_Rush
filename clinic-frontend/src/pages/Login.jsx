@@ -1,7 +1,7 @@
 import { useState } from "react";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
-
+import API from "../services/api";
 function Login() {
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
@@ -11,20 +11,27 @@ function Login() {
     e.preventDefault();
 
     try {
-      const res = await axios.post("/api/token/", {
-        username,
-        password,
-      });
+          const res = await axios.post("/api/token/", {
+            username,
+            password,
+          });
 
-      //  store token
-      localStorage.setItem("token", res.data.access);
+        //  store token
+        localStorage.setItem("token", res.data.access);
+        //  get role
+        const profile = await API.get("profile/");
+        const role = profile.data.role;
 
-     if (role === "doctor") {
-        navigate("/doctor-list");
-      } else {
-        navigate("/patient-list");
-      }
+        if (role === "admin") {
+          navigate("/admin-dashboard");
+        } else if (role === "doctor") {
+          navigate("/doctor-dashboard");
+        } else {
+          navigate("/patient-dashboard");
+        }
+
     } catch (err) {
+        console.log(err);
       alert("Invalid credentials");
     }
   };

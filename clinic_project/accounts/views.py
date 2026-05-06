@@ -48,7 +48,6 @@ def register(request):
 @permission_classes([IsAuthenticated])
 def profile(request):
     return Response({
-        "message": "Registration successful",
         "username": request.user.username,
         "role": request.user.role
     })

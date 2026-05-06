@@ -79,5 +79,51 @@ def doctor_list(request):
         return Response(serializer.errors)
 
 
+to change admin password
 
-task : create serialiser file and views.py , urls.py
+python manage.py shell
+from accounts.models import User  # or your custom user
+user = User.objects.get(username="admin")
+user.set_password("your_new_password")
+user.save()
+
+for django to react for admin and its password because jwtlogin != django login
+Step-by-step: Run in Django shell
+1. Open Terminal
+
+Go to your Django project folder (where manage.py is)
+
+Example:
+
+cd ClinicProject
+2. Start Django shell
+python manage.py shell
+
+You will see something like:
+
+>>>
+
+That means you are inside Python shell
+
+3. Import your User model
+
+Now type:
+
+from accounts.models import User
+
+Press Enter
+
+4. Get your admin user
+user = User.objects.get(username="admin")
+
+Press Enter
+
+5. Set new password (IMPORTANT STEP)
+user.set_password("adminadminadmin")
+
+
+
+6. Save it
+user.save()
+ 7. Exit shell
+exit()
