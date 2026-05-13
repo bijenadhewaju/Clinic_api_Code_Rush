@@ -62,7 +62,15 @@ def patient_list(request):
             {
                 "id": p.id,
                 "username": p.user.username,
-                "age": p.age
+                "age": p.age,
+                "gender": p.gender,
+                "phone": p.phone,
+                "height": p.height,
+                "weight": p.weight,
+                "address": p.address,
+                "medical_conditions": p.medical_conditions,
+                "blood_group": p.blood_group,
+                "emergency_contact":p.emergency_contact
             }
             for p in patients
         ]

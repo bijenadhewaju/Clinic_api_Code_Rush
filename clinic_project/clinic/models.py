@@ -16,22 +16,33 @@ class Doctor(models.Model):
 class Patient(models.Model):
     user = models.OneToOneField(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
     age = models.IntegerField(null=True, blank=True)
-    gender = models.CharField(max_length=10)
-    phone = models.CharField(max_length=15)
+    gender = models.CharField(max_length=10, null=True, blank=True)
+    phone = models.CharField(max_length=15, null=True, blank=True)
     height = models.FloatField(null=True, blank=True)
     weight = models.FloatField(null=True, blank=True)
-    address = models.TextField(blank=True)
-    medical_conditions = models.TextField(blank=True)
-    blood_group = models.CharField(max_length=5, blank=True)
-    emergency_contact = models.CharField(max_length=15, blank=True)
+    address = models.TextField(blank=True,null=True)
+    medical_conditions = models.TextField(blank=True,null=True)
+    blood_group = models.CharField(max_length=5, blank=True,null=True)
+    emergency_contact = models.CharField(max_length=15, blank=True,null=True)
 
     def __str__(self):
         return self.user.username
-
 class Appointment(models.Model):
+
+    STATUS_CHOICES = [
+        ("pending", "Pending"),
+        ("approved", "Approved"),
+        ("completed", "Completed"),
+        ("cancelled", "Cancelled"),
+        ("rescheduled", "Rescheduled"),
+    ]
+
     doctor = models.ForeignKey(Doctor, on_delete=models.CASCADE)
+
     patient = models.ForeignKey(Patient, on_delete=models.CASCADE)
+
     date = models.DateField()
+
     time = models.TimeField()
     description = models.TextField(blank=True, help_text="Reason for appointment/symptoms")
     status = models.CharField(max_length=100,
