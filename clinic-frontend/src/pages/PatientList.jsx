@@ -30,9 +30,15 @@ const handleLogout = () =>{
 <button onClick={handleLogout}>Logout</button>
       {patients.map((p) => (
         <div key={p.id}>
-          <p>
-            {p.username} - {p.age}
-          </p>
+          <p>Name:{p.username}</p>
+            <p>Age:{p.age}</p>
+            <p>Gender:{p.gender}</p>
+            <p>Height:{p.height}, Weight:{p.weight}</p>
+            <p>Phone:{p.phone}</p>
+            <p>Address:{p.address}</p>
+            <p>Blood Group:{p.blood_group}</p>
+            <p>Medical Condition:{p.medical_conditions}</p>
+            <p>Emergency Contact:{p.emergency_contact}</p>
         </div>
       ))}
     </div>
