@@ -25,22 +25,41 @@ const handleLogout = () =>{
     navigate("/login");
     };
   return (
-    <div>
-      <h2>Patient List</h2>
-<button onClick={handleLogout}>Logout</button>
-      {patients.map((p) => (
-        <div key={p.id}>
-          <p>Name:{p.username}</p>
-            <p>Age:{p.age}</p>
-            <p>Gender:{p.gender}</p>
-            <p>Height:{p.height}, Weight:{p.weight}</p>
-            <p>Phone:{p.phone}</p>
-            <p>Address:{p.address}</p>
-            <p>Blood Group:{p.blood_group}</p>
-            <p>Medical Condition:{p.medical_conditions}</p>
-            <p>Emergency Contact:{p.emergency_contact}</p>
-        </div>
-      ))}
+    <div className="container mt-4">
+      <div className="d-flex justify-content-between align-items-center mb-4">
+        <h2>Patient List</h2>
+        <button className="btn btn-outline-danger" onClick={handleLogout}>Logout</button>
+      </div>
+      <table className="table table-bordered table-hover">
+        <thead className="table-light">
+          <tr>
+            <th>ID</th>
+            <th>Name</th>
+            <th>Age</th>
+            <th>Gender</th>
+            <th>Phone</th>
+            <th>Blood Group</th>
+          </tr>
+        </thead>
+        <tbody>
+          {patients.length > 0 ? (
+            patients.map((p) => (
+              <tr key={p.id}>
+                <td>{p.id}</td>
+                <td>{p.username}</td>
+                <td>{p.age}</td>
+                <td>{p.gender}</td>
+                <td>{p.phone}</td>
+                <td>{p.blood_group}</td>
+              </tr>
+            ))
+          ) : (
+            <tr>
+              <td colSpan="6" className="text-center">No patients found.</td>
+            </tr>
+          )}
+        </tbody>
+      </table>
     </div>
   );
 }
