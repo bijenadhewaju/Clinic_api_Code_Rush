@@ -44,26 +44,15 @@ class Appointment(models.Model):
     date = models.DateField()
 
     time = models.TimeField()
-
-    description = models.TextField(null=True, blank=True)
-
-    status = models.CharField(
-        max_length=20,
-        choices=STATUS_CHOICES,
-        default="pending"
-    )
-
+    description = models.TextField(blank=True, help_text="Reason for appointment/symptoms")
+    status = models.CharField(max_length=100,
+                              choices=[
+                                  ("pending","Pending"),
+                                  ("approved","Approved"),
+                                  ("rejected","Rejected")
+                              ],default="pending")
     created_at = models.DateTimeField(default=timezone.now)
 
-    updated_at = models.DateTimeField(auto_now=True)
-
-    cancelled_by = models.ForeignKey(
-        settings.AUTH_USER_MODEL,
-        on_delete=models.SET_NULL,
-        null=True,
-        blank=True,
-        related_name="cancelled_appointments"
-    )
-
-    def _str_(self):
-        return f"{self.patient} - {self.date}"
+    class Meta:
+        def __str__(self):
+            return f"{self.patient} → {self.doctor} on {self.date} at {self.time} [{self.get_status_display()}]"
