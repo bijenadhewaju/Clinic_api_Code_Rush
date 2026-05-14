@@ -42,7 +42,6 @@ INSTALLED_APPS = [
     'rest_framework',
     'clinic',
     'accounts',
-    'frontend',
     'django_extensions',
     'corsheaders',
 

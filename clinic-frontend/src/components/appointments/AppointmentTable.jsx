@@ -1,14 +1,14 @@
 import React, { useState } from 'react';
-import AppointmentRecord from './AppointmentRecord';
+import AppointmentEdit from './AppointmentEdit';
 
-const AppointmentTable = ({ appointments, onUpdate, onCancel }) => {
+const AppointmentTable = ({ appointments, onUpdate, onCancel, onUpdateStatus, role }) => {
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState('All');
   const [sorting, setSorting] = useState({ key: 'date', direction: 'asc' });
 
   // Pagination
   const [currentPage, setCurrentPage] = useState(1);
-  const itemsPerPage = 5;
+  const itemsPerPage = 10;
 
   const handleSort = (key) => {
     let direction = 'asc';
@@ -20,8 +20,9 @@ const AppointmentTable = ({ appointments, onUpdate, onCancel }) => {
 
   const filteredData = appointments
     .filter(item => {
-      const matchesSearch = item.doctor_name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        item.description.toLowerCase().includes(searchTerm.toLowerCase());
+      const searchTarget = role === 'patient' ? item.doctor_name : item.patient_name;
+      const matchesSearch = (searchTarget && searchTarget.toLowerCase().includes(searchTerm.toLowerCase())) ||
+        (item.description && item.description.toLowerCase().includes(searchTerm.toLowerCase()));
 
       const matchesStatus = statusFilter === 'All' || item.status === statusFilter;
       return matchesSearch && matchesStatus;
@@ -51,7 +52,7 @@ const AppointmentTable = ({ appointments, onUpdate, onCancel }) => {
             <input
               type="text"
               className="form-control form-control-sm"
-              placeholder="Search doctor or description..."
+              placeholder={`Search ${role === 'patient' ? 'doctor' : 'patient'} or description...`}
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
             />
@@ -63,11 +64,11 @@ const AppointmentTable = ({ appointments, onUpdate, onCancel }) => {
               onChange={(e) => setStatusFilter(e.target.value)}
             >
               <option value="All">All Statuses</option>
-              <option value="Pending">Pending</option>
-              <option value="Approved">Approved</option>
-              <option value="Completed">Completed</option>
-              <option value="Cancelled">Cancelled</option>
-              <option value="Rescheduled">Rescheduled</option>
+              <option value="pending">Pending</option>
+              <option value="approved">Approved</option>
+              <option value="completed">Completed</option>
+              <option value="cancelled">Cancelled</option>
+              <option value="rescheduled">Rescheduled</option>
             </select>
           </div>
         </div>
@@ -78,7 +79,8 @@ const AppointmentTable = ({ appointments, onUpdate, onCancel }) => {
             <thead className="table-light">
               <tr>
                 <th style={{ cursor: 'pointer' }} onClick={() => handleSort('id')}>ID</th>
-                <th style={{ cursor: 'pointer' }} onClick={() => handleSort('doctor_name')}>Doctor</th>
+                {role === 'patient' && <th style={{ cursor: 'pointer' }} onClick={() => handleSort('doctor_name')}>Doctor</th>}
+                {role === 'doctor' && <th style={{ cursor: 'pointer' }} onClick={() => handleSort('patient_name')}>Patient</th>}
                 <th style={{ cursor: 'pointer' }} onClick={() => handleSort('date')}>Date</th>
                 <th>Time</th>
                 <th>Description</th>
@@ -90,11 +92,13 @@ const AppointmentTable = ({ appointments, onUpdate, onCancel }) => {
             <tbody>
               {paginatedData.length > 0 ? (
                 paginatedData.map(appt => (
-                  <AppointmentRecord
+                  <AppointmentEdit
                     key={appt.id}
                     appointment={appt}
                     onUpdate={onUpdate}
                     onCancel={onCancel}
+                    onUpdateStatus={onUpdateStatus}
+                    role={role}
                   />
                 ))
               ) : (
@@ -125,7 +129,7 @@ const AppointmentTable = ({ appointments, onUpdate, onCancel }) => {
 
             ))}
 
-            <li className={`page-item ${currentPage === totalPages ? 'disabled' : ''}`}>
+            <li className={`page-item ${currentPage === totalPages || totalPages === 0 ? 'disabled' : ''}`}>
               <button className="page-link" onClick={() => setCurrentPage(prev => prev + 1)}>Next</button>
             </li>
 

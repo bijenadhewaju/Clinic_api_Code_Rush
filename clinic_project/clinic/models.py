@@ -1,10 +1,19 @@
 from django.db import models
 from django.conf import settings
 
+
+GENDER_CHOICES = [
+    ('male', 'Male'),
+    ('female', 'Female'),
+    ('other', 'Other'),
+]
+
 class Doctor(models.Model):
     user = models.OneToOneField(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
     specialization = models.CharField(max_length=100)
     experience = models.CharField(max_length=100)
+    gender = models.CharField(max_length=10, choices=GENDER_CHOICES, default='other')
+    phone = models.CharField(max_length=15, blank=True)
     qualification = models.CharField(max_length=100, blank=True)
     phone = models.CharField(max_length=15, blank=True)
     bio = models.TextField(blank=True)
@@ -18,11 +27,6 @@ class Doctor(models.Model):
         return self.user.username
 
 class Patient(models.Model):
-    GENDER_CHOICES = [
-        ('male', 'Male'),
-        ('female', 'Female'),
-        ('other', 'Other'),
-    ]
     BLOOD_GROUP_CHOICES = [
         ('A+', 'A+'), ('A-', 'A-'),
         ('B+', 'B+'), ('B-', 'B-'),

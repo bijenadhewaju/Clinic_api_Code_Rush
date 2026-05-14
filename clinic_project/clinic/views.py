@@ -1,4 +1,3 @@
-from django.shortcuts import render
 from rest_framework import status
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.permissions import AllowAny, IsAuthenticated
@@ -12,17 +11,8 @@ from .serializers import DoctorSerializer, PatientSerializer, AppointmentSeriali
 def doctor_list(request):
     if request.method == 'GET':
         doctors = Doctor.objects.select_related('user').all()
-        data = [
-            {
-                "id": d.id,
-                "username": d.user.username,
-                "specialization": d.specialization,
-                "experience": d.experience,
-                "is_available": d.is_available
-            }
-            for d in doctors
-        ]
-        return Response(data)
+        serializer = DoctorSerializer(doctors, many=True)
+        return Response(serializer.data)
 
 @api_view(['GET','PUT','DELETE'])
 @permission_classes([IsAuthenticated])
@@ -49,32 +39,21 @@ def doctor_detail(request, pk):
 def patient_list(request):
     if request.method == 'GET':
         user = request.user
-        if user.role == 'doctor':
-            # Doctors see patients who have booked them
+        role = user.effective_role
+        if role == 'admin':
+            patients = Patient.objects.select_related('user').all()
+        elif role == 'doctor':
             doctor = getattr(user, 'doctor', None)
             if doctor:
                 patient_ids = Appointment.objects.filter(doctor=doctor).values_list('patient_id', flat=True)
                 patients = Patient.objects.filter(id__in=patient_ids).select_related('user')
             else:
                 patients = Patient.objects.none()
-        elif user.role == 'admin':
-            patients = Patient.objects.select_related('user').all()
         else:
-            # Patients see only themselves
             patients = Patient.objects.filter(user=user).select_related('user')
 
-        data = [
-            {
-                "id": p.id,
-                "username": p.user.username,
-                "age": p.age,
-                "gender": p.gender,
-                "phone": p.phone,
-                "blood_group": p.blood_group
-            }
-            for p in patients
-        ]
-        return Response(data)
+        serializer= PatientSerializer(patients, many=True)
+        return Response(serializer.data)
 
     if request.method == 'POST':
         serializer = PatientSerializer(data=request.data)
@@ -90,15 +69,18 @@ def patient_detail(request, pk):
         patient = Patient.objects.get(pk=pk)
     except Patient.DoesNotExist:
         return Response({"error": "Not Found"}, status=404)
+
     if request.method == 'GET':
         serializer = PatientSerializer(patient)
         return Response(serializer.data)
+
     if request.method == 'PUT':
         serializer = PatientSerializer(patient, data=request.data, partial=True)
         if serializer.is_valid():
             serializer.save()
             return Response(serializer.data)
         return Response(serializer.errors, status=400)
+        
     if request.method == 'DELETE':
         patient.delete()
         return Response({"message": "deleted"}, status=204)
@@ -108,35 +90,21 @@ def patient_detail(request, pk):
 def appointment_list(request):
     if request.method == 'GET':
         user = request.user
-
-        #for admin doctor and patient appointment list
-        if user.role == 'doctor':
+        role = user.effective_role
+        if role == 'doctor':
             appointments = Appointment.objects.filter(doctor__user=user).select_related('doctor__user', 'patient__user')
-        elif user.role == 'patient':
+        elif role == 'patient':
             appointments = Appointment.objects.filter(patient__user=user).select_related('doctor__user', 'patient__user')
         else:
             appointments = Appointment.objects.select_related('doctor__user', 'patient__user').all()
-            
-        data = [
-            {
-                "id": a.id,
-                "doctor": a.doctor.user.username,
-                "doctor_id": a.doctor.id,
-                "patient": a.patient.user.username,
-                "patient_id": a.patient.id,
-                "date": a.date,
-                "time": str(a.time),
-                "status": a.status,
-                "description": a.description
-            }
-            for a in appointments
-        ]
-        return Response(data)
+
+        serializer = AppointmentSerializer(appointments, many=True)
+        return Response(serializer.data)
         
     elif request.method == 'POST':
         # Automatically assign the logged-in patient if not provided
         data = request.data.copy()
-        if request.user.role == 'patient' and 'patient' not in data:
+        if request.user.effective_role == 'patient' and 'patient' not in data:
             try:
                 patient = Patient.objects.get(user=request.user)
                 data['patient'] = patient.id
@@ -164,10 +132,11 @@ def appointment_detail(request, pk):
 
     #check authorization means only patient and doctor can update their appointment
     user = request.user
-    if user.role == 'patient' and appointment.patient.user != user:
+    role = user.effective_role
+    if role == 'patient' and appointment.patient.user != user:
         return Response({"error": "Unauthorized"}, status=403)
 
-    if user.role == 'doctor' and appointment.doctor.user != user:
+    if role == 'doctor' and appointment.doctor.user != user:
         return Response({"error": "Unauthorized"}, status=403)
 
     #get appointment request by id for doctor and patient
