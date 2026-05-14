@@ -38,3 +38,7 @@ export const registerPatient = (data) =>
 export const registerDoctor = (data) =>
   API.post("clinic/doctors/", data);
 
+// for patient profile
+export const getMyProfile    = ()     => API.get("clinic/patient/profile/");
+export const updateMyProfile = (data) => API.patch("clinic/patient/profile/", data);
+

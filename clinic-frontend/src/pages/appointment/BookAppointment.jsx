@@ -10,7 +10,6 @@ function BookAppointment() {
 
   const navigate = useNavigate();
 
-  // load doctors
   useEffect(() => {
     API.get("clinic/doctors/")
       .then((res) => setDoctors(res.data))
@@ -21,9 +20,10 @@ function BookAppointment() {
     e.preventDefault();
 
     try {
+      // No `patient` field — the backend assigns it automatically
+      // from the logged-in user (see appointment_list POST in views.py)
       await API.post("clinic/appointment/", {
         doctor,
-        patient: 1,  //logged in patient
         date,
         time,
       });
@@ -33,6 +33,7 @@ function BookAppointment() {
 
     } catch (err) {
       console.log(err.response?.data);
+      alert(err.response?.data?.error || "Booking failed. Please try again.");
     }
   };
 
@@ -41,9 +42,8 @@ function BookAppointment() {
       <h2>Book Appointment</h2>
 
       <form onSubmit={handleSubmit}>
-        {/* Doctor Dropdown */}
-        <select onChange={(e) => setDoctor(e.target.value)}>
-          <option>Select Doctor</option>
+        <select onChange={(e) => setDoctor(e.target.value)} value={doctor}>
+          <option value="">Select Doctor</option>
           {doctors.map((d) => (
             <option key={d.id} value={d.id}>
               {d.username}
