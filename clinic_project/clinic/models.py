@@ -72,3 +72,39 @@ class Appointment(models.Model):
 
     def __str__(self):
         return f"{self.patient.user.username} -> {self.doctor.user.username} on {self.date} at {self.time} [{self.get_status_display()}]"
+
+
+class DoctorAvailability(models.Model):
+
+    DAY_CHOICES = [
+        ("monday", "Monday"),
+        ("tuesday", "Tuesday"),
+        ("wednesday", "Wednesday"),
+        ("thursday", "Thursday"),
+        ("friday", "Friday"),
+        ("saturday", "Saturday"),
+        ("sunday", "Sunday"),
+    ]
+
+    doctor = models.ForeignKey(
+        Doctor,
+        on_delete=models.CASCADE
+    )
+
+    day = models.CharField(
+        max_length=20,
+        choices=DAY_CHOICES
+    )
+
+    start_time = models.TimeField(null=True, blank=True)
+
+    end_time = models.TimeField(null=True, blank=True)
+
+    is_available = models.BooleanField(default=True)
+
+    def __str__(self):
+        return (
+            f"{self.doctor.user.username} "
+            f"- {self.day} "
+            f"({self.start_time} to {self.end_time})"
+        )
