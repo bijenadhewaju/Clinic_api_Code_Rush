@@ -161,3 +161,13 @@ def appointment_detail(request, pk):
     if request.method == 'DELETE':
         appointment.delete()
         return Response({"message": "deleted"}, status=204)
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def patient_profile(request):
+    try:
+        patient = Patient.objects.get(user=request.user)
+    except Patient.DoesNotExist:
+        return Response({"error": "Profile not found"}, status=404)
+
+    serializer = PatientProfileSerializer(patient)
+    return Response(serializer.data)
