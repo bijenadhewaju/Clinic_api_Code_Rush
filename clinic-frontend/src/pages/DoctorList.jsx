@@ -1,10 +1,10 @@
 import { useEffect, useState } from "react";
 import { getDoctors } from "../services/api";
-import { useNavigate } from "react-router-dom";
+import { useAuth } from "../components/AuthManager";
 
 function DoctorList() {
-  const [Doctors, setDoctors] = useState([]);
-  const navigate = useNavigate();
+  const [doctors, setDoctors] = useState([]);
+  const { logout } = useAuth();
 
   const loadDoctors = () => {
     getDoctors()
@@ -19,22 +19,35 @@ function DoctorList() {
   useEffect(() => {
     loadDoctors();
   }, []);
-//logout button
-const handleLogout = () =>{
-    localStorage.removeItem("token");
-    navigate("/login");
-    };
+
   return (
-    <div>
-      <h2>Doctor List</h2>
-<button onClick={handleLogout}>Logout</button>
-      {Doctors.map((p) => (
-        <div key={p.id}>
-          <p>
-            {p.username} - {p.specialization}
-          </p>
-        </div>
-      ))}
+    <div className="container mt-4">
+      <div className="d-flex justify-content-between align-items-center mb-4">
+        <h2>Doctor List</h2>
+        <button className="btn btn-outline-danger" onClick={logout}>Logout</button>
+      </div>
+      <table className="table table-bordered table-hover">
+        <thead className="table-light">
+          <tr>
+            <th>ID</th>
+            <th>Username</th>
+            <th>Specialization</th>
+            <th>Experience</th>
+            <th>Available</th>
+          </tr>
+        </thead>
+        <tbody>
+          {doctors.map((d) => (
+            <tr key={d.id}>
+              <td>{d.id}</td>
+              <td>{d.username}</td>
+              <td>{d.specialization}</td>
+              <td>{d.experience}</td>
+              <td>{d.is_available ? "✅" : "❌"}</td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
     </div>
   );
 }

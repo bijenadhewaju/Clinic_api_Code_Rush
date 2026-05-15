@@ -4,9 +4,9 @@ from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.response import Response
 
 from .models import Doctor, Patient, Appointment
-from .serializers import DoctorSerializer, PatientProfileSerializer, PatientSerializer, AppointmentSerializer
+from .serializers import DoctorSerializer, PatientSerializer, AppointmentSerializer
 
-@api_view(['GET','POST'])
+@api_view(['GET'])
 @permission_classes([IsAuthenticated])
 def doctor_list(request):
     if request.method == 'GET':
@@ -21,6 +21,14 @@ def doctor_detail(request, pk):
         doctor = Doctor.objects.get(pk=pk)
     except Doctor.DoesNotExist:
         return Response({"error": "Not Found"}, status=404)
+
+    user = request.user
+    role = user.effective_role
+
+    if request.method in ['PUT', 'DELETE']:
+        if role == 'patient' or (role == 'doctor' and doctor.user != user):
+            return Response({"error": "Unauthorized"}, status=403)
+
     if request.method == 'GET':
         serializer = DoctorSerializer(doctor)
         return Response(serializer.data)
@@ -69,6 +77,17 @@ def patient_detail(request, pk):
         patient = Patient.objects.get(pk=pk)
     except Patient.DoesNotExist:
         return Response({"error": "Not Found"}, status=404)
+
+    user = request.user
+    role = user.effective_role
+
+    # Patients cannot access other patients' profiles at all
+    if role == 'patient' and patient.user != user:
+        return Response({"error": "Unauthorized"}, status=403)
+        
+    # Doctors cannot delete/update patient profiles (only the patient themselves or admin)
+    if role == 'doctor' and request.method in ['PUT', 'DELETE']:
+        return Response({"error": "Unauthorized"}, status=403)
 
     if request.method == 'GET':
         serializer = PatientSerializer(patient)

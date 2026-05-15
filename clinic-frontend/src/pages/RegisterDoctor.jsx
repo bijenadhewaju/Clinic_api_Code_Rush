@@ -1,17 +1,23 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
+import { useAuth } from "../components/AuthManager";
 
 function RegisterDoctor() {
   const [username, setUserName] = useState("");
   const [password, setPassword] = useState("");
   const [specialization, setSpecialization] = useState("");
   const [experience, setExperience] = useState("");
+  const [gender, setGender] = useState("other");
+  const [phone, setPhone] = useState("");
+  const [error, setError] = useState("");
+  const { login } = useAuth();
 
-  const navigate = useNavigate(); //  IMPORTANT
+  const navigate = useNavigate();
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    setError("");
 
     try {
       //  1. REGISTER DOCTOR
@@ -20,7 +26,9 @@ function RegisterDoctor() {
         password,
         role: "doctor",
         specialization,
-        experience: Number(experience), //  ensure number
+        experience: String(experience),
+        gender,
+        phone,
       });
 
       //  2. AUTO LOGIN
@@ -30,48 +38,101 @@ function RegisterDoctor() {
       });
 
       //  3. SAVE TOKEN
-      localStorage.setItem("token", res.data.access);
+      const token = res.data.access;
+      localStorage.setItem("token", token);
 
-      //  4. REDIRECT
-      navigate("/doctor-list");
+      //  4. REDIRECT VIA CONTEXT
+      login(token, "doctor");
 
     } catch (err) {
       console.log("ERROR:", err.response?.data);
-      alert("Registration failed");
+      if (err.response && err.response.data) {
+        if (typeof err.response.data === 'object') {
+          const errorMessages = Object.entries(err.response.data).map(([field, msg]) => `${field}: ${msg}`).join(', ');
+          setError(errorMessages);
+        } else {
+          setError("Registration failed: " + err.response.data);
+        }
+      } else {
+        setError("Registration failed. Please try again.");
+      }
     }
   };
 
   return (
-    <form onSubmit={handleSubmit}>
-      <h2>Register Doctor</h2>
+    <div style={{ maxWidth: '400px', margin: '0 auto', padding: '20px' }}>
+      <form onSubmit={handleSubmit} className="d-flex flex-column gap-3">
+        <h2 className="text-center mb-4">Register Doctor</h2>
 
-      <input
-        placeholder="Username"
-        value={username}
-        onChange={(e) => setUserName(e.target.value)}
-      />
+        {error && <div className="alert alert-danger">{error}</div>}
 
-      <input
-        type="password"
-        placeholder="Password"
-        value={password}
-        onChange={(e) => setPassword(e.target.value)}
-      />
+        <input
+          className="form-control"
+          placeholder="Username"
+          value={username}
+          onChange={(e) => setUserName(e.target.value)}
+          required
+        />
+        <input
+          className="form-control"
+          type="password"
+          placeholder="Password"
+          value={password}
+          onChange={(e) => setPassword(e.target.value)}
+          required
+        />
 
-      <input
-        placeholder="Specialization"
-        value={specialization}
-        onChange={(e) => setSpecialization(e.target.value)}
-      />
+        <input
+          className="form-control"
+          placeholder="Specialization"
+          value={specialization}
+          onChange={(e) => setSpecialization(e.target.value)}
+          required
+        />
+        <input
+          className="form-control"
+          placeholder="Experience (e.g. '5 years')"
+          value={experience}
+          onChange={(e) => setExperience(e.target.value)}
+          required
+        />
 
-      <input
-        placeholder="Experience"
-        value={experience}
-        onChange={(e) => setExperience(e.target.value)}
-      />
+        <div className="mb-2">
+          <label className="form-label d-block mb-1 small text-muted">Gender</label>
+          <div className="d-flex gap-3">
+            {['male', 'female', 'other'].map((g) => (
+              <div key={g} className="form-check">
+                <input
+                  className="form-check-input"
+                  type="radio"
+                  name="gender"
+                  id={`doctor-${g}`}
+                  value={g}
+                  checked={gender === g}
+                  onChange={(e) => setGender(e.target.value)}
+                />
+                <label className="form-check-label text-capitalize" htmlFor={`doctor-${g}`}>
+                  {g}
+                </label>
+              </div>
+            ))}
+          </div>
+        </div>
 
-      <button type="submit">Register</button>
-    </form>
+        <div className="mb-2">
+          <label className="form-label small">Contact</label>
+          <input
+            className="form-control"
+            placeholder="Contact Number"
+            value={phone}
+            onChange={(e) => setPhone(e.target.value)}
+            required
+          />
+        </div>
+
+        <button type="submit" className="btn btn-primary btn-lg mt-3">Register</button>
+      </form>
+    </div>
   );
 }
 

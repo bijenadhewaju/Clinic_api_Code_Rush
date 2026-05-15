@@ -1,61 +1,105 @@
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
+import { AuthProvider } from "./components/AuthManager";
+import ProtectedRoute from "./components/ProtectedRoute";
+
 import Login from "./pages/Login";
+import AdminLogin from "./pages/AdminLogin";
 import PatientList from "./pages/PatientList";
 import HomePage from "./pages/HomePage";
 import RegisterPatient from "./pages/RegisterPatient";
-
 import RegisterDoctor from "./pages/RegisterDoctor";
 import DoctorList from "./pages/DoctorList";
 import AdminDashboard from "./pages/AdminDashboard";
 import DoctorDashboard from "./pages/DoctorDashboard";
 import PatientDashboard from "./pages/PatientDashboard";
 import Profile from "./pages/Profile";
-import BookAppointment from "./pages/appointment/BookAppointment";
-import Status from "./Components/Status";
+import BookAppointment from "./components/appointments/BookAppointment";
 
 function App() {
-  const isAuthenticated = localStorage.getItem("token");
-
   return (
     <BrowserRouter>
-      <div style={{ textAlign: "center" }}>
-        <h1>Clinic App</h1>
+      <AuthProvider>
+        <div style={{ textAlign: "center" }}>
+          <h1>Clinic App</h1>
 
-        <Routes>
-          {/*  Pages */}
-          <Route path="/register" element={<RegisterPatient />} />
-          <Route path="/register_doctor" element={<RegisterDoctor />} />
-          <Route path="/login" element={<Login />} />
-          <Route path="/patient-list" element={<PatientList />} />
-          <Route path="/home-page" element={<HomePage />} />
+          <Routes>
+            {/* Public Pages */}
+            <Route path="/" element={<HomePage />} />
+            <Route path="/login" element={<Login />} />
+            <Route path="/login/doctor" element={<Login expectedRole="doctor" />} />
+            <Route path="/login/patient" element={<Login expectedRole="patient" />} />
+            <Route path="/admin" element={<AdminLogin />} />
+            <Route path="/register-patient" element={<RegisterPatient />} />
+            <Route path="/register-doctor" element={<RegisterDoctor />} />
 
-          <Route path="/doctor-list" element={<DoctorList />} />
+            {/* Protected Admin Routes */}
+            <Route
+              path="/dashboard/admin"
+              element={
+                <ProtectedRoute allowedRoles={['admin']}>
+                  <AdminDashboard />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/doctors"
+              element={
+                <ProtectedRoute allowedRoles={['admin']}>
+                  <DoctorList />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/patients"
+              element={
+                <ProtectedRoute allowedRoles={['admin']}>
+                  <PatientList />
+                </ProtectedRoute>
+              }
+            />
 
-          <Route path="/admin-dashboard" element={<AdminDashboard />} />
-          <Route path="/doctor-dashboard" element={<DoctorDashboard />} />
-          <Route path="/patient-dashboard" element={<PatientDashboard />} />
-          <Route path="/profile" element={<Profile />} />
+            {/* Protected Doctor Routes */}
+            <Route
+              path="/dashboard/doctor"
+              element={
+                <ProtectedRoute allowedRoles={['doctor']}>
+                  <DoctorDashboard />
+                </ProtectedRoute>
+              }
+            />
 
-          <Route path="/book-appointment" element={<BookAppointment />} />
-          <Route path="/status" element={<Status />} />
+            {/* Protected Patient Routes */}
+            <Route
+              path="/dashboard/patient"
+              element={
+                <ProtectedRoute allowedRoles={['patient']}>
+                  <PatientDashboard />
+                </ProtectedRoute>
+              }
+            />
 
-          {/* Protected Route */}
-          <Route
-            path="/patient-list"
-            element={
-              isAuthenticated ? <PatientList /> : <Navigate to="/login" />
-            }
-          />
+            {/* Other routes that might exist and require some protection or redirect */}
+            <Route
+              path="/profile"
+              element={
+                <ProtectedRoute allowedRoles={['admin', 'doctor', 'patient']}>
+                  <Profile />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/book-appointment"
+              element={
+                <ProtectedRoute allowedRoles={['patient']}>
+                  <BookAppointment />
+                </ProtectedRoute>
+              }
+            />
 
-          <Route path="/login" element={<Navigate to="/login" />} />
-          <Route path="/" element={<Navigate to="/home-page" />} />
-          <Route
-            path="register_doctor"
-            element={<Navigate to="/register_doctor" />}
-          />
-          <Route path="doctor-list" element={<Navigate to="/doctor-list" />} />
-        </Routes>
-      </div>
+            <Route path="*" element={<Navigate to="/" replace />} />
+          </Routes>
+        </div>
+      </AuthProvider>
     </BrowserRouter>
   );
 }

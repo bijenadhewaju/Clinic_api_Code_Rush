@@ -1,58 +1,117 @@
 import { useState } from "react";
 import axios from "axios";
-import { useNavigate } from "react-router-dom";
+import { useAuth } from "../components/AuthManager";
 import API from "../services/api";
-function Login() {
+import { useNavigate } from "react-router-dom";
+
+function Login({ expectedRole }) {
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
+  const [error, setError] = useState("");
+  const [loading, setLoading] = useState(false);
+  const { login } = useAuth();
   const navigate = useNavigate();
 
+  // If no role selected yet, show choice screen
+  if (!expectedRole) {
+    return (
+      <div style={{ maxWidth: '400px', margin: '100px auto', padding: '20px', textAlign: 'center' }}>
+        <h2>Login As</h2>
+        <div className="d-flex flex-column gap-3 mt-4">
+          <button
+            className="btn btn-primary btn-lg"
+            onClick={() => navigate('/login/doctor')}
+          >
+            Doctor
+          </button>
+          <button
+            className="btn btn-success btn-lg"
+            onClick={() => navigate('/login/patient')}
+          >
+            Patient
+          </button>
+        </div>
+      </div>
+    );
+  }
+
+  // Login form
   const handleLogin = async (e) => {
     e.preventDefault();
+    setError("");
+    setLoading(true);
 
     try {
-          const res = await axios.post("/api/token/", {
-            username,
-            password,
-          });
+      const res = await axios.post("/api/token/", { username, password });
+      const token = res.data.access;
 
-        //  store token
-        localStorage.setItem("token", res.data.access);
-        //  get role
-        const profile = await API.get("profile/");
-        const role = profile.data.role;
+      localStorage.setItem("token", token);
 
-        if (role === "admin") {
-          navigate("/admin-dashboard");
-        } else if (role === "doctor") {
-          navigate("/doctor-dashboard");
-        } else {
-          navigate("/patient-dashboard");
-        }
+      const profile = await API.get("profile/");
+      const role = profile.data.role;
+
+      if (role !== expectedRole) {
+        localStorage.removeItem("token");
+        setError(`Access Denied! You are a ${role}, please use ${role} login.`);
+        return;
+      }
+
+      login(token, role);
 
     } catch (err) {
-        console.log(err);
-      alert("Invalid credentials");
+      localStorage.removeItem("token");
+      if (err.response?.status === 401) {
+        setError("Invalid username or password.");
+      } else {
+        setError("Login failed. Please try again.");
+      }
+    } finally {
+      setLoading(false);
     }
   };
 
   return (
-    <form onSubmit={handleLogin}>
-      <h2>Login</h2>
+    <div style={{ maxWidth: '400px', margin: '100px auto', padding: '20px' }}>
+      <h2>{expectedRole === 'doctor' ? 'Doctor' : 'Patient'} Login</h2>
 
-      <input
-        placeholder="Username"
-        onChange={(e) => setUsername(e.target.value)}
-      />
+      {error && <div className="alert alert-danger">{error}</div>}
 
-      <input
-        type="password"
-        placeholder="Password"
-        onChange={(e) => setPassword(e.target.value)}
-      />
+      <form onSubmit={handleLogin} className="d-flex flex-column gap-3">
+        <input
+          className="form-control"
+          placeholder="Username"
+          value={username}
+          onChange={(e) => setUsername(e.target.value)}
+          required
+        />
+        <input
+          className="form-control"
+          type="password"
+          placeholder="Password"
+          value={password}
+          onChange={(e) => setPassword(e.target.value)}
+          required
+        />
 
-      <button type="submit">Login</button>
-    </form>
+        <button
+          type="submit"
+          className={`btn ${expectedRole === 'doctor' ? 'btn-primary' : 'btn-success'}`}
+          disabled={loading}
+        >
+          {loading ? 'Logging in...' : `Login as ${expectedRole === 'doctor' ? 'Doctor' : 'Patient'}`}
+        </button>
+
+      </form>
+
+      <div className="mt-3 text-center">
+        <button
+          className="btn btn-link btn-sm"
+          onClick={() => navigate('/login')}
+        >
+          ← Back
+        </button>
+      </div>
+    </div>
   );
 }
 
