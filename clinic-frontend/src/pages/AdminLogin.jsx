@@ -16,9 +16,11 @@ function AdminLogin() {
     try {
       const res = await axios.post("/api/token/", { username, password });
       const token = res.data.access;
+      const refreshToken = res.data.refresh;
 
       // Temporarily store to verify role
       localStorage.setItem("token", token);
+      localStorage.setItem("refresh_token", refreshToken);
       const profile = await API.get("profile/");
       const role = profile.data.role;
 
@@ -28,11 +30,12 @@ function AdminLogin() {
         return;
       }
 
-      login(token, 'admin');
+      login(token, refreshToken, 'admin');
 
     } catch (err) {
       console.log(err);
       localStorage.removeItem("token");
+      localStorage.removeItem("refresh_token");
       if (err.response?.status === 401) {
         setError("Invalid username or password.");
       } else {

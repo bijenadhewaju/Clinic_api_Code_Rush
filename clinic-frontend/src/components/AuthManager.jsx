@@ -12,8 +12,9 @@ export const AuthProvider = ({ children }) => {
 
   const navigate = useNavigate();
 
-  const login = (token, role) => {
+  const login = (token, refreshToken, role) => {
     localStorage.setItem('token', token);
+    if (refreshToken) localStorage.setItem('refresh_token', refreshToken);
     localStorage.setItem('role', role);
     setUser({ token, role });
 
@@ -25,6 +26,7 @@ export const AuthProvider = ({ children }) => {
 
   const logout = () => {
     localStorage.removeItem('token');
+    localStorage.removeItem('refresh_token');
     localStorage.removeItem('role');
     setUser(null);
     navigate('/');

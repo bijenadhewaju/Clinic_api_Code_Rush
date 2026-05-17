@@ -44,8 +44,10 @@ function Login({ expectedRole }) {
     try {
       const res = await axios.post("/api/token/", { username, password });
       const token = res.data.access;
+      const refreshToken = res.data.refresh;
 
       localStorage.setItem("token", token);
+      localStorage.setItem("refresh_token", refreshToken);
 
       const profile = await API.get("profile/");
       const role = profile.data.role;
@@ -56,10 +58,11 @@ function Login({ expectedRole }) {
         return;
       }
 
-      login(token, role);
+      login(token, refreshToken, role);
 
     } catch (err) {
       localStorage.removeItem("token");
+      localStorage.removeItem("refresh_token");
       if (err.response?.status === 401) {
         setError("Invalid username or password.");
       } else {
