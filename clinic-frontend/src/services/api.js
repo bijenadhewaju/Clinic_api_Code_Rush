@@ -14,6 +14,7 @@ API.interceptors.request.use((req) => {
 
   return req; // VERY IMPORTANT
 });
+
 //refresh the token
 API.interceptors.response.use(
   (response) => response,
@@ -30,7 +31,7 @@ API.interceptors.response.use(
           // Try to get a new access token
           const res = await axios.post("/api/token/refresh/", { refresh: refreshToken });
           const newAccessToken = res.data.access;
-          
+
           // Save new token and retry the original request
           localStorage.setItem("token", newAccessToken);
           originalRequest.headers.Authorization = `Bearer ${newAccessToken}`;
@@ -67,3 +68,21 @@ export const registerPatient = (data) =>
 export const registerDoctor = (data) =>
   API.post("clinic/doctors/", data);
 
+// ── Appointments ─────────────────────────────────────────────
+export const getAppointments    = ()           => API.get("clinic/appointment/");
+export const bookAppointment    = (data)       => API.post("clinic/appointment/", data);
+export const updateAppointment  = (id, data)   => API.patch(`clinic/appointment/${id}/`, data);
+export const deleteAppointment  = (id)         => API.delete(`clinic/appointment/${id}/`);
+
+// ── Appointment Stats ─────────────────────────────────────────
+export const getAppointmentStats = () => API.get("clinic/appointment/stats/");
+
+// ── Doctor Availability ───────────────────────────────────────
+export const getMyAvailability    = ()        => API.get("clinic/availability/");
+export const saveAvailability     = (data)    => API.post("clinic/availability/", data);
+export const updateAvailability   = (id, data) => API.put(`clinic/availability/${id}/`, data);
+export const deleteAvailability   = (id)      => API.delete(`clinic/availability/${id}/`);
+
+// ── Slot-based Booking ─────────────────────────────────────────
+export const getAvailableSlots = (doctorId, date) =>
+  API.get(`clinic/available-slots/?doctor=${doctorId}&date=${date}`);

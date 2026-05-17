@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from .models import Doctor, Patient, Appointment
+from .models import Doctor, Patient, Appointment, Availability
 
 
 #python to json -serializer
@@ -44,3 +44,9 @@ class AppointmentSerializer(serializers.ModelSerializer):
               'patient_name', 'date', 'time', 'description', 'status',  
               'created_at', 'updated_at'
             ]
+
+class AvailabilitySerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Availability
+        fields = ['id', 'doctor', 'day', 'start_time', 'end_time', 'created_at', 'updated_at']
+        read_only_fields = ['doctor']

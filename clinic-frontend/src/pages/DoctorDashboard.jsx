@@ -1,12 +1,14 @@
 import { useEffect, useState } from "react";
 import API from "../services/api";
 import AppointmentTable from "../components/appointments/AppointmentTable";
+import AvailabilityManager from "../Components/availability/AvailabilityManager";
 import { useAuth } from "../components/AuthManager";
 import { Link } from "react-router-dom";
 
 function DoctorDashboard() {
   const [appointments, setAppointments] = useState([]);
   const [profile, setProfile] = useState(null);
+  const [activeTab, setActiveTab] = useState("appointments");
   const { logout } = useAuth();
 
   useEffect(() => {
@@ -49,18 +51,43 @@ function DoctorDashboard() {
           <div className="card shadow-sm border-0 bg-light">
             <div className="card-body py-3">
               <h5 className="card-title"><i className="bi bi-person-badge me-2"></i>Professional Profile</h5>
-                <Link to="/profile" className="text-decoration-none">Update Clinic Details &rarr;</Link>
+              <Link to="/profile" className="text-decoration-none">Update Clinic Details &rarr;</Link>
             </div>
           </div>
         </div>
       </div>
 
-      <h4 className="mb-3">Assigned Appointments</h4>
-      <AppointmentTable
-        appointments={appointments}
-        onUpdateStatus={handleUpdateStatus}
-        role="doctor"
-      />
+      <ul className="nav nav-tabs mb-3">
+        <li className="nav-item">
+          <button
+            className={`nav-link ${activeTab === "appointments" ? "active fw-semibold" : ""}`}
+            onClick={() => setActiveTab("appointments")}
+          >
+            📋 Appointments
+          </button>
+        </li>
+        <li className="nav-item">
+          <button
+            className={`nav-link ${activeTab === "availability" ? "active fw-semibold" : ""}`}
+            onClick={() => setActiveTab("availability")}
+          >
+            🗓️ My Availability
+          </button>
+        </li>
+      </ul>
+
+      {activeTab === "appointments" && (
+        <>
+          <h4 className="mb-3">Assigned Appointments</h4>
+          <AppointmentTable
+            appointments={appointments}
+            onUpdateStatus={handleUpdateStatus}
+            role="doctor"
+          />
+        </>
+      )}
+
+      {activeTab === "availability" && <AvailabilityManager />}
     </div>
   );
 }
