@@ -14,6 +14,7 @@ import DoctorDashboard from "./pages/DoctorDashboard";
 import PatientDashboard from "./pages/PatientDashboard";
 import Profile from "./pages/Profile";
 import BookAppointment from "./components/appointments/BookAppointment";
+import MedicalHistory from "./pages/MedicalHistory";
 
 function App() {
   return (
@@ -76,6 +77,15 @@ function App() {
                   <PatientDashboard />
                 </ProtectedRoute>
               }
+            />
+
+            <Route
+                path="/dashboard/patient/medical-history"
+                element={
+                    <ProtectedRoute allowedRoles={['patient']}>
+                        <MedicalHistory />
+                        </ProtectedRoute>
+                }
             />
 
             {/* Other routes that might exist and require some protection or redirect */}

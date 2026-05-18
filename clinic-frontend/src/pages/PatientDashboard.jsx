@@ -84,6 +84,12 @@ function PatientDashboard() {
         </div>
         <div className="d-flex gap-2">
           <Link to="/book-appointment" className="btn btn-primary">Book Appointment</Link>
+          <Link
+  to="/dashboard/patient/medical-history"
+  className="btn btn-success"
+>
+  Medical History
+</Link>
           <button onClick={logout} className="btn btn-outline-danger">Logout</button>
         </div>
       </div>
