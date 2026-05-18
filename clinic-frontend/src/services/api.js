@@ -4,7 +4,7 @@ const API = axios.create({
   baseURL: "/api/",
 });
 
-// Attach JWT token
+// Attach JWT token to every rquest
 API.interceptors.request.use((req) => {
   const token = localStorage.getItem("token");
 
@@ -57,16 +57,22 @@ API.interceptors.response.use(
 
 export default API;
 
-// API endpoints
-export const getPatients = () => API.get("clinic/patient/");
-export const addPatient = (data) => API.post("clinic/patient/", data);
-export const getDoctors = () => API.get("clinic/doctors/");
-// add for registration
-export const registerPatient = (data) =>
-  API.post("register/", data);
+// ── Auth / Profile ──────────────────────────────────────────
+export const registerUser     = (data) => API.post("register/", data);
+export const registerPatient  = (data) => API.post("register/", data);
+export const registerDoctor   = (data) => API.post("clinic/doctors/", data);
+export const getMyProfile     = ()     => API.get("profile/");
+export const updateMyProfile  = (data) => API.put("profile/", data);
 
-export const registerDoctor = (data) =>
-  API.post("clinic/doctors/", data);
+// ── Doctors ──────────────────────────────────────────────────
+export const getDoctors       = ()        => API.get("clinic/doctors/");
+export const getDoctorById    = (id)      => API.get(`clinic/doctors/${id}/`);
+export const updateDoctor     = (id, data) => API.put(`clinic/doctors/${id}/`, data);
+
+// ── Patients ─────────────────────────────────────────────────
+export const getPatients      = ()        => API.get("clinic/patient/");
+export const getPatientById   = (id)      => API.get(`clinic/patient/${id}/`);
+export const addPatient       = (data)    => API.post("clinic/patient/", data);
 
 // ── Appointments ─────────────────────────────────────────────
 export const getAppointments    = ()           => API.get("clinic/appointment/");

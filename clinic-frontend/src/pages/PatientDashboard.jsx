@@ -1,17 +1,42 @@
 import { useEffect, useState } from "react";
-import API from "../services/api";
+import API, { getAppointmentStats } from "../services/api";
 import { Link } from "react-router-dom";
 import AppointmentTable from "../components/appointments/AppointmentTable";
 import { useAuth } from "../components/AuthManager";
 
+function StatCard({ label, value, color, icon }) {
+  const colors = {
+    blue: { bg: "#e8f4fd", border: "#3498db", text: "#2980b9" },
+    green: { bg: "#e8f8f0", border: "#2ecc71", text: "#27ae60" },
+    orange: { bg: "#fef5e7", border: "#f39c12", text: "#e67e22" },
+    red: { bg: "#fdf0ef", border: "#e74c3c", text: "#c0392b" },
+    purple: { bg: "#f4f0fb", border: "#9b59b6", text: "#8e44ad" },
+  };
+  const c = colors[color] || colors.blue;
+
+  return (
+    <div className="col-6 col-md-4 col-lg-2">
+      <div className="card border-0 shadow-sm h-100" style={{ borderLeft: `4px solid ${c.border}`, background: c.bg }}>
+        <div className="card-body text-center py-3 px-2">
+          <div style={{ fontSize: "1.4rem" }}>{icon}</div>
+          <div className="fw-bold" style={{ fontSize: "1.6rem", color: c.text }}>{value ?? "—"}</div>
+          <div className="text-muted small">{label}</div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 function PatientDashboard() {
   const [appointments, setAppointments] = useState([]);
   const [profile, setProfile] = useState(null);
+  const [stats, setStats] = useState(null);
   const { logout } = useAuth();
 
   useEffect(() => {
     fetchProfile();
     fetchAppointments();
+    fetchStats();
   }, []);
 
   const fetchProfile = () => {
@@ -26,18 +51,26 @@ function PatientDashboard() {
       .catch((err) => console.log(err));
   };
 
+  const fetchStats = () => {
+    getAppointmentStats()
+      .then((res) => setStats(res.data))
+      .catch((err) => console.error("Failed to fetch stats", err));
+  };
+
   const handleUpdate = (id, data) => {
     API.patch(`clinic/appointment/${id}/`, data)
       .then(() => {
         fetchAppointments();
+        fetchStats();
       })
       .catch(err => console.error("Update failed", err));
   };
 
   const handleCancel = (id) => {
-    API.patch(`clinic/appointment/${id}/`, { status: 'cancelled' })
+    API.patch(`clinic/appointment/${id}/`, { status: "cancelled" })
       .then(() => {
         fetchAppointments();
+        fetchStats();
       })
       .catch(err => console.error("Cancel failed", err));
   };
@@ -65,6 +98,18 @@ function PatientDashboard() {
           </div>
         </div>
       </div>
+
+      {/* Stats Cards */}
+      {stats && (
+        <div className="row g-3 mb-4">
+          <StatCard label="Total" value={stats.total} color="blue" icon="📋" />
+          <StatCard label="Today" value={stats.today} color="purple" icon="📅" />
+          <StatCard label="Pending" value={stats.pending} color="orange" icon="⏳" />
+          <StatCard label="Approved" value={stats.approved} color="green" icon="✅" />
+          <StatCard label="Completed" value={stats.completed} color="blue" icon="🏁" />
+          <StatCard label="Cancelled" value={stats.cancelled} color="red" icon="❌" />
+        </div>
+      )}
 
       <h4 className="mb-3">Appointment History</h4>
       <AppointmentTable

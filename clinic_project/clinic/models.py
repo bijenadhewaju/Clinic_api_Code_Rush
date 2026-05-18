@@ -13,6 +13,7 @@ class Doctor(models.Model):
     specialization = models.CharField(max_length=100)
     experience = models.CharField(max_length=100)
     gender = models.CharField(max_length=10, choices=GENDER_CHOICES, default='other')
+    qualification = models.CharField(max_length=100, blank=True)
     phone = models.CharField(max_length=15, blank=True)
     bio = models.TextField(blank=True)
     is_available = models.BooleanField(default=True)
@@ -63,6 +64,9 @@ class Appointment(models.Model):
     date = models.DateField()
     time = models.TimeField()
     description = models.TextField(blank=True)
+    comments = models.TextField(blank=True, null=True)
+    diagnosis = models.TextField(blank=True, null=True)
+    prescription = models.TextField(blank=True, null=True)
     status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='pending')
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
@@ -73,26 +77,38 @@ class Appointment(models.Model):
     def __str__(self):
         return f"{self.patient.user.username} -> {self.doctor.user.username} on {self.date} at {self.time} [{self.get_status_display()}]"
 
-class Availability(models.Model):
-    DAY_CHOICES = [
-        ('Monday', 'Monday'),
-        ('Tuesday', 'Tuesday'),
-        ('Wednesday', 'Wednesday'),
-        ('Thursday', 'Thursday'),
-        ('Friday', 'Friday'),
-        ('Saturday', 'Saturday'),
-        ('Sunday', 'Sunday'),
-    ]
-    doctor = models.ForeignKey(Doctor, on_delete=models.CASCADE, related_name='availabilities')
-    day = models.CharField(max_length=15, choices=DAY_CHOICES)
-    start_time = models.TimeField()
-    end_time = models.TimeField()
-    created_at = models.DateTimeField(auto_now_add=True)
-    updated_at = models.DateTimeField(auto_now=True)
 
-    class Meta:
-        unique_together = ('doctor', 'day')
-        ordering = ['day', 'start_time']
+class DoctorAvailability(models.Model):
+
+    DAY_CHOICES = [
+        ("monday", "Monday"),
+        ("tuesday", "Tuesday"),
+        ("wednesday", "Wednesday"),
+        ("thursday", "Thursday"),
+        ("friday", "Friday"),
+        ("saturday", "Saturday"),
+        ("sunday", "Sunday"),
+    ]
+
+    doctor = models.ForeignKey(
+        Doctor,
+        on_delete=models.CASCADE
+    )
+
+    day = models.CharField(
+        max_length=20,
+        choices=DAY_CHOICES
+    )
+
+    start_time = models.TimeField(null=True, blank=True)
+
+    end_time = models.TimeField(null=True, blank=True)
+
+    is_available = models.BooleanField(default=True)
 
     def __str__(self):
-        return f"{self.doctor.user.username} - {self.day}: {self.start_time} to {self.end_time}"
+        return (
+            f"{self.doctor.user.username} "
+            f"- {self.day} "
+            f"({self.start_time} to {self.end_time})"
+        )

@@ -3,13 +3,13 @@ import { useNavigate } from "react-router-dom";
 import API, { getAvailableSlots } from "../../services/api";
 
 function BookAppointment() {
-  const [doctors, setDoctors]     = useState([]);
-  const [slots, setSlots]         = useState([]);
-  const [slotInfo, setSlotInfo]   = useState(null);   // { day, start, end }
-  const [slotsMsg, setSlotsMsg]   = useState("");
+  const [doctors, setDoctors] = useState([]);
+  const [slots, setSlots] = useState([]);
+  const [slotInfo, setSlotInfo] = useState(null);   // { day, start, end }
+  const [slotsMsg, setSlotsMsg] = useState("");
   const [loadingSlots, setLoadingSlots] = useState(false);
-  const [submitting, setSubmitting]     = useState(false);
-  const [message, setMessage]     = useState({ text: "", type: "" });
+  const [submitting, setSubmitting] = useState(false);
+  const [message, setMessage] = useState({ text: "", type: "" });
 
   const [formData, setFormData] = useState({
     doctor: "",
@@ -44,10 +44,12 @@ function BookAppointment() {
     setSlots([]);
     setSlotInfo(null);
     setSlotsMsg("");
+
     try {
       const res = await getAvailableSlots(doctorId, date);
       setSlots(res.data.slots || []);
       setSlotInfo(res.data.availability || null);
+
       if (res.data.slots?.length === 0) {
         setSlotsMsg(res.data.message || "No available slots for this day.");
       }
@@ -75,6 +77,7 @@ function BookAppointment() {
       return;
     }
     setSubmitting(true);
+
     try {
       await API.post("clinic/appointment/", { ...formData });
       showMsg("Appointment booked successfully!", "success");
@@ -95,7 +98,7 @@ function BookAppointment() {
   return (
     <div className="container mt-5" style={{ maxWidth: 760 }}>
       <button className="btn btn-outline-secondary btn-sm mb-3" onClick={() => navigate(-1)}>
-        ← Back
+        &larr; Back
       </button>
 
       <div className="card shadow-sm border-0">
@@ -178,11 +181,10 @@ function BookAppointment() {
                     <button
                       key={slot}
                       type="button"
-                      className={`btn btn-sm ${
-                        formData.time === slot
-                          ? "btn-primary"
-                          : "btn-outline-primary"
-                      }`}
+                      className={`btn btn-sm ${formData.time === slot
+                        ? "btn-primary"
+                        : "btn-outline-primary"
+                        }`}
                       onClick={() => setFormData((prev) => ({ ...prev, time: slot }))}
                     >
                       {slot}
